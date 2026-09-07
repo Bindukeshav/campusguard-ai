@@ -5,8 +5,8 @@ from ultralytics import YOLO
 import cv2 as cv
 
 model = YOLO("yolov8n.pt")
-results = model("test_image.jpg")
-image = cv.imread("test_image.jpg")
+results = model("baseball-team.jpg")
+image = cv.imread("baseball-team.jpg")
 print(image)
 boxes = results[0].boxes
 names = model.names
@@ -30,7 +30,7 @@ def get_center(box):
 
 for bag in bags:
     bag_x,bag_y = get_center(bag)
-    if_near_person = False 
+    is_near_person = False 
     for p in person:
         person_x, person_y = get_center(p)
         distance = math.sqrt((bag_x - person_x)**2 + (bag_y - person_y)**2)
@@ -47,5 +47,19 @@ for bag in bags:
     cv.rectangle(image,(x1,y1),(x2,y2),color,3)
     cv.putText(image, label_text,(x1,y1-10),cv.FONT_HERSHEY_SIMPLEX,0.8,color,2)
 
+for p in person:
+    x1,y1,x2,y2 = map(int,p.xyxy[0])
+    width=x2 -x1
+    height = y2 -y1
+    aspect_ratio = width/height
+
+    if aspect_ratio > 1.4:
+        fall_label = "POSSIBLE FALL"
+        fall_color=(0,0,255)
+    else:
+        fall_label ="Standing"
+        fall_color =(0,255,0)
+    cv.rectangle(image,(x1,y1),(x2,y2),fall_color,2)
+    cv.putText(image, fall_label,(x1,y1-10),cv.FONT_HERSHEY_SIMPLEX,0.6,fall_color,2)
 cv.imwrite("result.jpg",image)
 print("Saved result.jpg - open it to see the marked image!")
